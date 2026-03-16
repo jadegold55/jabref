@@ -54,7 +54,6 @@ import org.jabref.logic.exporter.SelfContainedSaveConfiguration;
 import org.jabref.logic.exporter.TemplateExporter;
 import org.jabref.logic.git.preferences.GitPreferences;
 import org.jabref.logic.importer.ImportException;
-import org.jabref.logic.importer.ImportFormatPreferences;
 import org.jabref.logic.importer.ImporterPreferences;
 import org.jabref.logic.importer.fetcher.ACMPortalFetcher;
 import org.jabref.logic.importer.fetcher.AstrophysicsDataSystem;
@@ -986,21 +985,6 @@ public class JabRefCliPreferences implements CliPreferences {
         return StringUtil.isNotBlank(rawPath) ? Path.of(rawPath) : defaultValue;
     }
 
-    /// Clear all preferences.
-    ///
-    /// @throws BackingStoreException if JabRef is unable to write to the registry/the preference storage
-    @Override
-    public void clear() throws BackingStoreException {
-        clearAllBibEntryTypes();
-        clearCitationKeyPatterns();
-        clearTruststoreFromCustomCertificates();
-        clearCustomFetcherKeys();
-        PREFS_NODE.clear();
-        new SharedDatabasePreferences().clear();
-
-        getProxyPreferences().setAll(ProxyPreferences.getDefault());
-    }
-
     private void clearTruststoreFromCustomCertificates() {
         TrustStoreManager trustStoreManager = new TrustStoreManager(Path.of(defaults.get(TRUSTSTORE_PATH).toString()));
         trustStoreManager.clearCustomCertificates();
@@ -1119,6 +1103,21 @@ public class JabRefCliPreferences implements CliPreferences {
         }
     }
 
+    /// Clear all preferences.
+    ///
+    /// @throws BackingStoreException if JabRef is unable to write to the registry/the preference storage
+    @Override
+    public void clear() throws BackingStoreException {
+        clearAllBibEntryTypes();
+        clearCitationKeyPatterns();
+        clearTruststoreFromCustomCertificates();
+        clearCustomFetcherKeys();
+        PREFS_NODE.clear();
+        new SharedDatabasePreferences().clear();
+
+        getProxyPreferences().setAll(ProxyPreferences.getDefault());
+    }
+
     /// Imports Preferences from an XML file.
     ///
     /// @param path Path of file to import from
@@ -1147,14 +1146,6 @@ public class JabRefCliPreferences implements CliPreferences {
     }
 
     // ToDo: Cleanup
-    @Override
-    public LayoutFormatterPreferences getLayoutFormatterPreferences() {
-        return new LayoutFormatterPreferences(
-                getNameFormatterPreferences(),
-                getDOIPreferences(),
-                getFilePreferences().mainFileDirectoryProperty());
-    }
-
     @Override
     public JournalAbbreviationPreferences getJournalAbbreviationPreferences() {
         if (journalAbbreviationPreferences != null) {
@@ -2378,18 +2369,6 @@ public class JabRefCliPreferences implements CliPreferences {
         EasyBind.listen(grobidPreferences.grobidURLProperty(), (_, _, newValue) -> put(GROBID_URL, newValue));
 
         return grobidPreferences;
-    }
-
-    @Override
-    public ImportFormatPreferences getImportFormatPreferences() {
-        return new ImportFormatPreferences(
-                getBibEntryPreferences(),
-                getCitationKeyPatternPreferences(),
-                getFieldPreferences(),
-                getXmpPreferences(),
-                getDOIPreferences(),
-                getGrobidPreferences(),
-                getFilePreferences());
     }
 
     @Override
