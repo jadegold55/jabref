@@ -20,6 +20,7 @@ Note that this project **does not** adhere to [Semantic Versioning](https://semv
 - We added an export format for [`academicpages`](https://academicpages.github.io/) format. [#12727](https://github.com/JabRef/jabref/issues/12727)
 - We added "All" option to the citation fetcher combo box, which queries all providers (CrossRef, OpenAlex, OpenCitations, SemanticScholar) and merges the results into a single deduplicated list.
 - We added a quick setting toggle to enable cover images download. [#15322](https://github.com/JabRef/jabref/pull/15322)
+- We now support refreshing existing CSL citations with respect to their in-text nature in the LibreOffice integration. [#15369](https://github.com/JabRef/jabref/pull/15369)
 
 ### Changed
 
@@ -34,9 +35,12 @@ Note that this project **does not** adhere to [Semantic Versioning](https://semv
     [#15220](https://github.com/JabRef/jabref/pull/15220)
 - We enabled drag and drop of Windows shortcut (`.lnk`) files to open libraries. [#15036](https://github.com/JabRef/jabref/issues/15036)
 - We refined the "Select files to import" page in "Search for unlinked local files" dialog to give the users the choice of linking the file to a related entry or import it to a new entry. [#13689](https://github.com/JabRef/jabref/issues/13689)
+- The "Make/Sync bibliography" button in OO/LO panel now refreshes citations before generating bibliographies. [#14387](https://github.com/JabRef/jabref/issues/14387)
 
 ### Fixed
 
+- We fixed vertical cursor movement shortcuts (Command+Up/Down for document start/end, Option+Up/Down for paragraph start/end) not working correctly in the BibTeX source editor on macOS. [#5937](https://github.com/JabRef/jabref/issues/5937)
+- We fixed text cursor movement shortcuts (Command+Left/Right for line start/end, Option+Left/Right for word navigation) not working correctly in the BibTeX source editor on macOS. [#5937](https://github.com/JabRef/jabref/issues/5937)
 - We fixed PDF import to prefer the content extracted title over filename like XMP metadata titles. [#11999](https://github.com/JabRef/jabref/issues/11999)
 - We fixed RIS export writing the full page range into both start page and end page fields instead of splitting them correctly. [#15106](https://github.com/JabRef/jabref/issues/15106)
 - We fixed an issue where shortcut keys did not work for linked files in the entry editor. [#12564](https://github.com/JabRef/jabref/issues/12564)
@@ -55,11 +59,13 @@ Note that this project **does not** adhere to [Semantic Versioning](https://semv
 - We fixed an issue where resetting preference does not reset External File Type to default. [#15117](https://github.com/JabRef/jabref/issues/15117)
 - We fixed an issue where institutional authors in braces {Institutional Author} triggered a "Names are not in the standard format" warning. [#15157](https://github.com/JabRef/jabref/issues/15157)
 - We fixed an issue where the Windows installer was missing the JabRef icon. [#14965](https://github.com/JabRef/jabref/issues/14965)
+- We fixed substring search in linked files by preserving user typed wildcards. [#14569](https://github.com/JabRef/jabref/issues/14569)
 - We fixed an issue where quickly navigating up and down with the entry editor opened at the citations tab would lead to exception. [#15233](https://github.com/JabRef/jabref/pull/15233)
 - Fixed identifier selection not working on fresh start [#15000](https://github.com/JabRef/jabref/issues/15000)
 - We fixed an issue where an exception would be thrown when trying to extract references from a PDF [#15308](https://github.com/JabRef/jabref/pull/15308)
 - We fixed an issue where an exception was thrown when importing via cli and no opened library. [#15314](https://github.com/JabRef/jabref/pull/15314)
 - We fixed an issue where the Citation Relations tab failed to recognize already-imported papers when their DOI differed only in letter casing. [#12967](https://github.com/JabRef/jabref/issues/12967)
+- We improved CSL support with JabRef LibreOffice converter extension. [#14387](https://github.com/JabRef/jabref/issues/14387)
 
 ### Removed
 
