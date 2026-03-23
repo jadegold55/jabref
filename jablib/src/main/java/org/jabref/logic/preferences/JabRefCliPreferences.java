@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import javafx.beans.InvalidationListener;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 
@@ -413,18 +414,21 @@ public class JabRefCliPreferences implements CliPreferences {
 
     // region Push to application preferences
     private static final String PUSH_TO_APPLICATION = "pushToApplication";
-    private static final String PUSH_EMACS_PATH = "emacsPath";
     private static final String PUSH_EMACS_ADDITIONAL_PARAMETERS = "emacsParameters";
-    private static final String PUSH_LYXPIPE = "lyxpipe";
-    private static final String PUSH_TEXSTUDIO_PATH = "TeXstudioPath";
-    private static final String PUSH_TEXWORKS_PATH = "TeXworksPath";
-    private static final String PUSH_WINEDT_PATH = "winEdtPath";
-    private static final String PUSH_TEXMAKER_PATH = "texmakerPath";
     private static final String PUSH_VIM_SERVER = "vimServer";
-    private static final String PUSH_VIM = "vim";
-    private static final String PUSH_SUBLIME_TEXT_PATH = "sublimeTextPath";
-    private static final String PUSH_VSCODE_PATH = "VScodePath";
     private static final String PUSH_CITE_COMMAND = "citeCommand";
+
+    private static final Map<PushApplications, String> PUSH_APPLICATIONS_PATHS = Map.of(
+            PushApplications.EMACS, "emacsPath",
+            PushApplications.LYX, "lyxpipe",
+            PushApplications.TEXMAKER, "texmakerPath",
+            PushApplications.TEXSTUDIO, "TeXstudioPath",
+            PushApplications.TEXWORKS, "TeXworksPath",
+            PushApplications.VIM, "vim",
+            PushApplications.WIN_EDT, "winEdtPath",
+            PushApplications.SUBLIME_TEXT, "sublimeTextPath",
+            PushApplications.VSCODE, "VScodePath"
+    );
     // endregion
 
     // region Git
@@ -1085,7 +1089,7 @@ public class JabRefCliPreferences implements CliPreferences {
         pushToApplicationPreferences = getPushToApplicationPreferencesFromBackingStore(PushToApplicationPreferences.getDefault());
 
         EasyBind.listen(pushToApplicationPreferences.activeApplicationNameProperty(), (_, _, newValue) -> put(PUSH_TO_APPLICATION, newValue));
-        pushToApplicationPreferences.getCommandPaths().addListener((_, _, newValue) -> storePushToApplicationPath(newValue));
+        pushToApplicationPreferences.getCommandPaths().addListener((MapChangeListener<? super String, ? super String>) this::storePushToApplicationPath);
         EasyBind.listen(pushToApplicationPreferences.emacsArgumentsProperty(), (_, _, newValue) -> put(PUSH_EMACS_ADDITIONAL_PARAMETERS, newValue));
         EasyBind.listen(pushToApplicationPreferences.vimServerProperty(), (_, _, newValue) -> put(PUSH_VIM_SERVER, newValue));
         EasyBind.listen(pushToApplicationPreferences.citeCommandProperty(),
@@ -1104,30 +1108,20 @@ public class JabRefCliPreferences implements CliPreferences {
         );
     }
 
-    private void storePushToApplicationPath(Map<String, String> commandPair) {
-        commandPair.forEach((key, value) -> {
-            // is only for the preferences and therefore is okay to throw NoSuchElementException
-            switch (PushApplications.getApplicationByDisplayName(key).get()) {
-                case PushApplications.EMACS ->
-                        put(PUSH_EMACS_PATH, value);
-                case PushApplications.LYX ->
-                        put(PUSH_LYXPIPE, value);
-                case PushApplications.TEXMAKER ->
-                        put(PUSH_TEXMAKER_PATH, value);
-                case PushApplications.TEXSTUDIO ->
-                        put(PUSH_TEXSTUDIO_PATH, value);
-                case PushApplications.TEXWORKS ->
-                        put(PUSH_TEXWORKS_PATH, value);
-                case PushApplications.VIM ->
-                        put(PUSH_VIM, value);
-                case PushApplications.WIN_EDT ->
-                        put(PUSH_WINEDT_PATH, value);
-                case PushApplications.SUBLIME_TEXT ->
-                        put(PUSH_SUBLIME_TEXT_PATH, value);
-                case PushApplications.VSCODE ->
-                        put(PUSH_VSCODE_PATH, value);
-            }
-        });
+    private void storePushToApplicationPath(MapChangeListener.Change<? extends String, ? extends String> change) {
+        // is only for the preferences and therefore is okay to throw NoSuchElementException
+        PushApplications app = PushApplications.getApplicationByDisplayName(change.getKey()).get();
+        String key = PUSH_APPLICATIONS_PATHS.get(app);
+
+        if (key == null) {
+            return;
+        }
+
+        if (change.wasAdded()) {
+            put(key, change.getValueAdded());
+        } else if (change.wasRemoved()) {
+            remove(key);
+        }
     }
 
     /// An empty string is used as the default value to ensure that an installation of a tool leads to the new path
@@ -1136,15 +1130,11 @@ public class JabRefCliPreferences implements CliPreferences {
     private Map<String, String> readPushToApplicationPath(Map<String, String> defaults) {
         Map<String, String> commands = new HashMap<>();
 
-        commands.put(PushApplications.EMACS.getDisplayName(), get(PUSH_EMACS_PATH, defaults.getOrDefault(PUSH_EMACS_PATH, "")));
-        commands.put(PushApplications.LYX.getDisplayName(), get(PUSH_LYXPIPE, defaults.getOrDefault(PUSH_LYXPIPE, "")));
-        commands.put(PushApplications.TEXMAKER.getDisplayName(), get(PUSH_TEXMAKER_PATH, defaults.getOrDefault(PUSH_TEXMAKER_PATH, "")));
-        commands.put(PushApplications.TEXSTUDIO.getDisplayName(), get(PUSH_TEXSTUDIO_PATH, defaults.getOrDefault(PUSH_TEXSTUDIO_PATH, "")));
-        commands.put(PushApplications.TEXWORKS.getDisplayName(), get(PUSH_TEXWORKS_PATH, defaults.getOrDefault(PUSH_TEXWORKS_PATH, "")));
-        commands.put(PushApplications.VIM.getDisplayName(), get(PUSH_VIM, defaults.getOrDefault(PUSH_VIM, "")));
-        commands.put(PushApplications.WIN_EDT.getDisplayName(), get(PUSH_WINEDT_PATH, defaults.getOrDefault(PUSH_WINEDT_PATH, "")));
-        commands.put(PushApplications.SUBLIME_TEXT.getDisplayName(), get(PUSH_SUBLIME_TEXT_PATH, defaults.getOrDefault(PUSH_SUBLIME_TEXT_PATH, "")));
-        commands.put(PushApplications.VSCODE.getDisplayName(), get(PUSH_VSCODE_PATH, defaults.getOrDefault(PUSH_VSCODE_PATH, "")));
+        PUSH_APPLICATIONS_PATHS.forEach((app, key) -> {
+            String value = get(key, defaults.getOrDefault(key, ""));
+            commands.put(app.getDisplayName(), value);
+        });
+
         return commands;
     }
     // endregion
