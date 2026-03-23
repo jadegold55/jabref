@@ -70,8 +70,7 @@ public class ExternalTabViewModel implements PreferenceTabViewModel {
                 new HashMap<>(initialPushToApplicationPreferences.getCommandPaths()),
                 initialPushToApplicationPreferences.getEmacsArguments(),
                 initialPushToApplicationPreferences.getVimServer(),
-                initialPushToApplicationPreferences.getCiteCommand(),
-                initialPushToApplicationPreferences.getDefaultCiteCommand()
+                initialPushToApplicationPreferences.getCiteCommand()
         );
 
         terminalCommandValidator = new FunctionBasedValidator<>(
@@ -250,6 +249,6 @@ public class ExternalTabViewModel implements PreferenceTabViewModel {
     }
 
     public void resetCiteCommandToDefault() {
-        this.citeCommandProperty.setValue(preferences.getPushToApplicationPreferences().getDefaultCiteCommand().toString());
+        this.citeCommandProperty.setValue(PushToApplicationPreferences.getDefault().getCiteCommand().toString());
     }
 }
