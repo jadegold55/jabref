@@ -51,7 +51,7 @@ public class PushToApplicationPreferences {
                 commands,
                 "-n -e",
                 "vim",
-                new CitationCommandString("\\cite{key1,key2}", ",", "}"));
+                new CitationCommandString("\\cite{", ",", "}"));
     }
 
     public static PushToApplicationPreferences getDefault() {
