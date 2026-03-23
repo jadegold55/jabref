@@ -1041,8 +1041,8 @@ public class JabRefCliPreferences implements CliPreferences {
         //       See org.jabref.gui.preferences.JabRefGuiPreferences.importPreferences for the GUI
 
         // in case of incomplete or corrupt xml fall back to current preferences
-        getProxyPreferences().setAll(getProxyPreferences());
-        getPushToApplicationPreferences().setAll(getPushToApplicationPreferences());
+        getProxyPreferences().setAll(getProxyPreferencesFromBackingStore(getProxyPreferences()));
+        getPushToApplicationPreferences().setAll(getPushToApplicationPreferencesFromBackingStore(getPushToApplicationPreferences()));
     }
 
     private static void importPreferencesToBackingStore(Path path) throws JabRefException {
