@@ -1,25 +1,28 @@
 package org.jabref.gui.search;
 
-import javafx.scene.Node;
-import javafx.scene.input.KeyEvent;
-
+import org.controlsfx.control.textfield.CustomTextField;
+import org.controlsfx.control.textfield.TextFields;
 import org.jabref.gui.icon.IconTheme;
 import org.jabref.gui.keyboard.KeyBinding;
 import org.jabref.gui.keyboard.KeyBindingRepository;
 import org.jabref.logic.l10n.Localization;
 
-import org.controlsfx.control.textfield.CustomTextField;
-import org.controlsfx.control.textfield.TextFields;
+import javafx.scene.Node;
+import javafx.scene.input.KeyEvent;
 
 public class SearchTextField {
 
     public static CustomTextField create(KeyBindingRepository keyBindingRepository) {
+        return create(keyBindingRepository, IconTheme.JabRefIcons.SEARCH);
+    }
+
+    public static CustomTextField create(KeyBindingRepository keyBindingRepository, IconTheme.JabRefIcons icon) {
         CustomTextField textField = (CustomTextField) TextFields.createClearableTextField();
         textField.setPromptText(Localization.lang("Search..."));
         textField.setId("searchField");
         textField.getStyleClass().add("search-field");
 
-        Node graphicNode = IconTheme.JabRefIcons.SEARCH.getGraphicNode();
+        Node graphicNode = icon.getGraphicNode();
         graphicNode.getStyleClass().add("search-field-icon");
         textField.setLeft(graphicNode);
 

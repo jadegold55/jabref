@@ -144,11 +144,8 @@ public class GroupTreeView extends BorderPane {
     }
 
     private void createNodes() {
-        searchField = SearchTextField.create(keyBindingRepository);
+        searchField = SearchTextField.create(keyBindingRepository, IconTheme.JabRefIcons.FILTER);
         searchField.setPromptText(Localization.lang("Filter groups..."));
-        Node filterIcon = IconTheme.JabRefIcons.FILTER.getGraphicNode();
-        filterIcon.getStyleClass().add("search-field-icon");
-        searchField.setLeft(filterIcon);
         searchField.setId("groupFilterBar");
         this.setTop(searchField);
 
