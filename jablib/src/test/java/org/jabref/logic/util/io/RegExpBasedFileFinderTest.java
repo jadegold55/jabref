@@ -173,4 +173,117 @@ class RegExpBasedFileFinderTest {
         // then
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    void dateFallsBackToMonthWhenExactDateFileNotFound() throws IOException {
+        // given - entry has full date but only a month-precision file exists
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
+                .withField(StandardField.DATE, "2021-07-07");
+        Files.createFile(directory.resolve("2021-07.pdf"));
+
+        RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
+
+        // when
+        List<Path> result = fileFinder.findAssociatedFiles(localEntry, List.of(directory), PDF_EXTENSION);
+
+        // then
+        assertEquals(List.of(directory.resolve("2021-07.pdf")), result);
+    }
+
+    @Test
+    void dateFallsBackToYearWhenOnlyYearFileExists() throws IOException {
+        // given - entry has full date but only a year-precision file exists
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
+                .withField(StandardField.DATE, "2021-07-07");
+        Files.createFile(directory.resolve("2021.pdf"));
+
+        RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
+
+        // when
+        List<Path> result = fileFinder.findAssociatedFiles(localEntry, List.of(directory), PDF_EXTENSION);
+
+        // then
+        assertEquals(List.of(directory.resolve("2021.pdf")), result);
+    }
+
+    @Test
+    void dateYearMonthFallsBackToYearWhenOnlyYearFileExists() throws IOException {
+        // given - entry has year+month date but only a year-precision file exists
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
+                .withField(StandardField.DATE, "2021-07");
+        Files.createFile(directory.resolve("2021.pdf"));
+
+        RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
+
+        // when
+        List<Path> result = fileFinder.findAssociatedFiles(localEntry, List.of(directory), PDF_EXTENSION);
+
+        // then
+        assertEquals(List.of(directory.resolve("2021.pdf")), result);
+    }
+
+    @Test
+    void dateExactMatchUsedWhenExactFileExists() throws IOException {
+        // given - both exact and month-precision files exist; exact match should win
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
+                .withField(StandardField.DATE, "2021-07-07");
+        Files.createFile(directory.resolve("2021-07-07.pdf"));
+        Files.createFile(directory.resolve("2021-07.pdf"));
+
+        RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
+
+        // when
+        List<Path> result = fileFinder.findAssociatedFiles(localEntry, List.of(directory), PDF_EXTENSION);
+
+        // then - should only return the exact match, not the month-precision file
+        assertEquals(List.of(directory.resolve("2021-07-07.pdf")), result);
+    }
+
+    @Test
+    void dateReturnsEmptyWhenNoFileMatchesAnyFallback() throws IOException {
+        // given - entry has a date but no matching file at any precision level
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
+                .withField(StandardField.DATE, "2021-07-07");
+
+        RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
+
+        // when
+        List<Path> result = fileFinder.findAssociatedFiles(localEntry, List.of(directory), PDF_EXTENSION);
+
+        // then
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void dateFallbackFromYearMonthFieldsWhenNoDateField() throws IOException {
+        // given - entry has year+month fields (no date field); only month-precision file exists
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
+                .withField(StandardField.YEAR, "2021")
+                .withField(StandardField.MONTH, "07");
+        Files.createFile(directory.resolve("2021-07.pdf"));
+
+        RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
+
+        // when
+        List<Path> result = fileFinder.findAssociatedFiles(localEntry, List.of(directory), PDF_EXTENSION);
+
+        // then
+        assertEquals(List.of(directory.resolve("2021-07.pdf")), result);
+    }
+
+    @Test
+    void nonDatePatternUnaffectedByFallbackLogic() throws IOException {
+        // given - pattern uses [YEAR] not [DATE]; fallback logic should not trigger
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
+                .withField(StandardField.YEAR, "2021");
+        Files.createFile(directory.resolve("2021.pdf"));
+
+        RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[YEAR].*\\\\.[extension]", ',');
+
+        // when
+        List<Path> result = fileFinder.findAssociatedFiles(localEntry, List.of(directory), PDF_EXTENSION);
+
+        // then - existing behavior unchanged
+        assertEquals(List.of(directory.resolve("2021.pdf")), result);
+    }
 }

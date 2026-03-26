@@ -7,7 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -18,6 +20,8 @@ import java.util.stream.Stream;
 import org.jabref.logic.citationkeypattern.BracketedPattern;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.field.StandardField;
+
 
 class RegExpBasedFileFinder implements FileFinder {
 
@@ -78,7 +82,50 @@ class RegExpBasedFileFinder implements FileFinder {
     @Override
     public List<Path> findAssociatedFiles(BibEntry entry, List<Path> directories, List<String> extensions) throws IOException {
         String extensionRegExp = '(' + String.join("|", extensions) + ')';
-        return findFile(entry, directories, extensionRegExp);
+        if (this.regExp.contains("[DATE]")) {
+            List<String> candidates = getDateFallbackCandidates(entry);
+            for (String candidate : candidates) {
+                String patternWithCandidate = this.regExp.replace("[DATE]", candidate);
+                List<Path> results = new ArrayList<>();
+                for (Path directory : directories) {
+                    results.addAll(findFile(entry, directory, patternWithCandidate, extensionRegExp));
+                }
+                if (!results.isEmpty()) {
+                    return results;
+                }
+            }
+            return new ArrayList<>();
+        } else {
+            return findFile(entry, directories, extensionRegExp);
+        }
+    }
+    private List<String> getDateFallbackCandidates(BibEntry entry) {
+        Optional<String> year = entry.getField(StandardField.YEAR);
+        Optional<String> month = entry.getField(StandardField.MONTH);
+        Optional<String> day = entry.getField(StandardField.DAY);
+
+        String date = entry.getField(StandardField.DATE).orElseGet(() -> {
+            if (year.isEmpty()) {
+                return "";
+            }
+            if (month.isPresent() && day.isPresent()) {
+                return year.get() + "-" + month.get() + "-" + day.get();
+            }
+            if (month.isPresent()) {
+                return year.get() + "-" + month.get();
+            }
+            return year.get();
+        });
+
+        if (date.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<String> candidates = new ArrayList<>();
+        String[] parts = date.split("-");
+        for (int i = parts.length; i >= 1; i--) {
+            candidates.add(String.join("-", Arrays.copyOfRange(parts, 0, i)));
+        }
+        return candidates;
     }
 
     /// Searches the given directory and filename pattern for a file for the
