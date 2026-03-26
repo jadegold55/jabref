@@ -20,15 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegExpBasedFileFinderTest {
     private static final List<String> PDF_EXTENSION = List.of("pdf");
-    private static final List<String> FILE_NAMES = List.of(
-            "ACM_IEEE-CS.pdf",
-            "pdfInDatabase.pdf",
-            "Regexp from [A-Z].pdf",
-            "directory/subdirectory/2003_Hippel_209.pdf",
-            "directory/subdirectory/2017_Gražulis_726.pdf",
-            "directory/subdirectory/pdfInSubdirectory.pdf",
-            "directory/subdirectory/GUO ea - INORG CHEM COMMUN 2010 - Ferroelectric Metal Organic Framework (MOF).pdf"
-    );
+    private static final List<String> FILE_NAMES = List.of("ACM_IEEE-CS.pdf", "pdfInDatabase.pdf", "Regexp from [A-Z].pdf", "directory/subdirectory/2003_Hippel_209.pdf", "directory/subdirectory/2017_Gražulis_726.pdf", "directory/subdirectory/pdfInSubdirectory.pdf", "directory/subdirectory/GUO ea - INORG CHEM COMMUN 2010 - Ferroelectric Metal Organic Framework (MOF).pdf");
     private Path directory;
     private BibEntry entry;
 
@@ -111,11 +103,7 @@ class RegExpBasedFileFinderTest {
 
     @Test
     void findAssociatedFilesFindFileContainingParenthesizesFromBracketedExpression() throws IOException {
-        BibEntry bibEntry = new BibEntry().withCitationKey("Guo_ICC_2010")
-                                          .withField(StandardField.TITLE, "Ferroelectric Metal Organic Framework (MOF)")
-                                          .withField(StandardField.AUTHOR, "Guo, M. and Cai, H.-L. and Xiong, R.-G.")
-                                          .withField(StandardField.JOURNAL, "Inorganic Chemistry Communications")
-                                          .withField(StandardField.YEAR, "2010");
+        BibEntry bibEntry = new BibEntry().withCitationKey("Guo_ICC_2010").withField(StandardField.TITLE, "Ferroelectric Metal Organic Framework (MOF)").withField(StandardField.AUTHOR, "Guo, M. and Cai, H.-L. and Xiong, R.-G.").withField(StandardField.JOURNAL, "Inorganic Chemistry Communications").withField(StandardField.YEAR, "2010");
 
         RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[TITLE].*\\\\.[extension]", ',');
 
@@ -182,24 +170,23 @@ class RegExpBasedFileFinderTest {
                 full date falls back to month,      2021-07-07, 2021-07.pdf,               2021-07.pdf
                 full date falls back to year,       2021-07-07, 2021.pdf,                  2021.pdf
                 year+month date falls back to year, 2021-07,    2021.pdf,                  2021.pdf
-                no matching file returns empty,     2021-07-07, ,                          
+                no matching file returns empty,     2021-07-07, ,
             """)
-    void dateFallbackBehavior(String description, String dateValue, String filesToCreate, String expectedFile)
-        throws IOException {
+    void dateFallbackBehavior(String description, String dateValue, String filesToCreate, String expectedFile) throws IOException {
         // given
-        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
-                .withField(StandardField.DATE, dateValue);
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article).withField(StandardField.DATE, dateValue);
 
         if (filesToCreate != null && !filesToCreate.isBlank()) {
             for (String filename : filesToCreate.split(";")) {
                 Files.createFile(directory.resolve(filename.strip()));
             }
         }
-        
+
         RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
+
         // when
         List<Path> result = fileFinder.findAssociatedFiles(localEntry, List.of(directory), PDF_EXTENSION);
-        // then
+
         // then
         if (expectedFile == null || expectedFile.isBlank()) {
             assertEquals(List.of(), result);
@@ -210,10 +197,9 @@ class RegExpBasedFileFinderTest {
 
     @Test
     void dateFallbackFromYearMonthFieldsWhenNoDateField() throws IOException {
-        // given - entry has year+month fields (no date field); only month-precision file exists
-        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
-                .withField(StandardField.YEAR, "2021")
-                .withField(StandardField.MONTH, "07");
+        // given - entry has year+month fields (no date field); only month-precision
+        // file exists
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article).withField(StandardField.YEAR, "2021").withField(StandardField.MONTH, "07");
         Files.createFile(directory.resolve("2021-07.pdf"));
 
         RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
@@ -228,8 +214,7 @@ class RegExpBasedFileFinderTest {
     @Test
     void nonDatePatternUnaffectedByFallbackLogic() throws IOException {
         // given - pattern uses [YEAR] not [DATE]; fallback logic should not trigger
-        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
-                .withField(StandardField.YEAR, "2021");
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article).withField(StandardField.YEAR, "2021");
         Files.createFile(directory.resolve("2021.pdf"));
 
         RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[YEAR].*\\\\.[extension]", ',');
