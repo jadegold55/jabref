@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import org.jabref.logic.citationkeypattern.BracketedPattern;
 import org.jabref.logic.util.strings.StringUtil;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.Month;
 import org.jabref.model.entry.field.StandardField;
 
 
@@ -56,6 +57,7 @@ class RegExpBasedFileFinder implements FileFinder {
                 .replaceAll(EXT_MARKER, extensionRegExp) // Replace the extension marker
                 .replaceAll("\\\\\\\\", "\\\\");
         try {
+            System.out.println("Pattern: " + fileNamePattern);
             return Pattern.compile('^' + fileNamePattern + '$', Pattern.CASE_INSENSITIVE);
         } catch (PatternSyntaxException e) {
             throw new IOException("There is a syntax error in the regular expression %s used to search for files".formatted(fileNamePattern), e);
@@ -112,7 +114,10 @@ class RegExpBasedFileFinder implements FileFinder {
                 return year.get() + "-" + month.get() + "-" + day.get();
             }
             if (month.isPresent()) {
-                return year.get() + "-" + month.get();
+                String monthNum = Month.parse(month.get())
+                        .map(Month::getTwoDigitNumber)
+                        .orElse(month.get());
+                return year.get() + "-" + monthNum;
             }
             return year.get();
         });

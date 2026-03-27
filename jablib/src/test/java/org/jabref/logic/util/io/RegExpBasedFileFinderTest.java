@@ -195,11 +195,16 @@ class RegExpBasedFileFinderTest {
         }
     }
 
-    @Test
-    void dateFallbackFromYearMonthFieldsWhenNoDateField() throws IOException {
-        // given - entry has year+month fields (no date field); only month-precision
-        // file exists
-        BibEntry localEntry = new BibEntry(StandardEntryType.Article).withField(StandardField.YEAR, "2021").withField(StandardField.MONTH, "07");
+    @ParameterizedTest
+    @CsvSource(textBlock = """
+            numeric month format,    07,    2021-07.pdf
+            bibtex month string,     #jul#, 2021-07.pdf
+        """)
+    void dateFallbackFromYearMonthFieldsWhenNoDateField(String description, String monthValue, String expectedFile) throws IOException {
+        // given - entry has year+month fields (no date field); only month-precision file exists
+        BibEntry localEntry = new BibEntry(StandardEntryType.Article)
+                .withField(StandardField.YEAR, "2021")
+                .withField(StandardField.MONTH, monthValue);
         Files.createFile(directory.resolve("2021-07.pdf"));
 
         RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
@@ -208,7 +213,7 @@ class RegExpBasedFileFinderTest {
         List<Path> result = fileFinder.findAssociatedFiles(localEntry, List.of(directory), PDF_EXTENSION);
 
         // then
-        assertEquals(List.of(directory.resolve("2021-07.pdf")), result);
+        assertEquals(List.of(directory.resolve(expectedFile)), result);
     }
 
     @Test
