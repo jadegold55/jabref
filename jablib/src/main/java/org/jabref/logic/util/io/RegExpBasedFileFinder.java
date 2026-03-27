@@ -23,7 +23,6 @@ import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.Month;
 import org.jabref.model.entry.field.StandardField;
 
-
 class RegExpBasedFileFinder implements FileFinder {
 
     private static final String EXT_MARKER = "__EXTENSION__";
