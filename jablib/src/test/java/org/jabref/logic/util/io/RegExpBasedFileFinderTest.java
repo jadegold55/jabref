@@ -197,9 +197,9 @@ class RegExpBasedFileFinderTest {
 
     @ParameterizedTest
     @CsvSource(textBlock = """
-            numeric month format,    07,    2021-07.pdf
-            bibtex month string,     #jul#, 2021-07.pdf
-        """)
+                numeric month format,               07,    2021-07.pdf
+                bibtex month string,                #jul#, 2021-07.pdf
+            """)
     void dateFallbackFromYearMonthFieldsWhenNoDateField(String description, String monthValue, String expectedFile) throws IOException {
         // given - entry has year+month fields (no date field); only month-precision file exists
         BibEntry localEntry = new BibEntry(StandardEntryType.Article)

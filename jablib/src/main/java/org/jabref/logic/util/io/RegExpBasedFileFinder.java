@@ -57,7 +57,6 @@ class RegExpBasedFileFinder implements FileFinder {
                 .replaceAll(EXT_MARKER, extensionRegExp) // Replace the extension marker
                 .replaceAll("\\\\\\\\", "\\\\");
         try {
-            System.out.println("Pattern: " + fileNamePattern);
             return Pattern.compile('^' + fileNamePattern + '$', Pattern.CASE_INSENSITIVE);
         } catch (PatternSyntaxException e) {
             throw new IOException("There is a syntax error in the regular expression %s used to search for files".formatted(fileNamePattern), e);
@@ -71,7 +70,7 @@ class RegExpBasedFileFinder implements FileFinder {
     private static String toFileNameRegex(String expandedContent) {
         String cleanedContent = FileNameCleaner.cleanFileName(expandedContent);
         return expandedContent.equals(cleanedContent) ? Pattern.quote(expandedContent) :
-               "(" + Pattern.quote(expandedContent) + ")|(" + Pattern.quote(cleanedContent) + ")";
+                "(" + Pattern.quote(expandedContent) + ")|(" + Pattern.quote(cleanedContent) + ")";
     }
 
     /// Method for searching for files using regexp. A list of extensions and directories can be
