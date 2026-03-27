@@ -70,7 +70,7 @@ class RegExpBasedFileFinder implements FileFinder {
     private static String toFileNameRegex(String expandedContent) {
         String cleanedContent = FileNameCleaner.cleanFileName(expandedContent);
         return expandedContent.equals(cleanedContent) ? Pattern.quote(expandedContent) :
-                "(" + Pattern.quote(expandedContent) + ")|(" + Pattern.quote(cleanedContent) + ")";
+               "(" + Pattern.quote(expandedContent) + ")|(" + Pattern.quote(cleanedContent) + ")";
     }
 
     /// Method for searching for files using regexp. A list of extensions and directories can be
@@ -114,8 +114,8 @@ class RegExpBasedFileFinder implements FileFinder {
             }
             if (month.isPresent()) {
                 String monthNum = Month.parse(month.get())
-                        .map(Month::getTwoDigitNumber)
-                        .orElse(month.get());
+                                       .map(Month::getTwoDigitNumber)
+                                       .orElse(month.get());
                 return year.get() + "-" + monthNum;
             }
             return year.get();
