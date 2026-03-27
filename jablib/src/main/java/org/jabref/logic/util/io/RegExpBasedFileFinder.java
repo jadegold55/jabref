@@ -100,6 +100,16 @@ class RegExpBasedFileFinder implements FileFinder {
             return findFile(entry, directories, extensionRegExp);
         }
     }
+
+    /// Builds date candidates for `[DATE]` pattern matching, ordered from most to least specific.
+    ///
+    /// Uses the `date` field if present. Otherwise, constructs a date from the `year`, `month`, and `day` fields.
+    /// BibTeX month strings (e.g., `#jul#`) are normalized to two-digit numbers via [Month#parse(String)].
+    ///
+    /// For example, a date of `2021-07-07` produces `["2021-07-07", "2021-07", "2021"]`.
+    ///
+    /// @param entry the bibliography entry to extract date information from
+    /// @return date candidates in decreasing specificity, or an empty list if no date information is available
     private List<String> getDateFallbackCandidates(BibEntry entry) {
         Optional<String> year = entry.getField(StandardField.YEAR);
         Optional<String> month = entry.getField(StandardField.MONTH);
