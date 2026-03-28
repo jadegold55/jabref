@@ -86,8 +86,7 @@ class RegExpBasedFileFinder implements FileFinder {
         if (dateMatcher.find()) {
             List<String> candidates = getDateFallbackCandidates(entry);
             for (String candidate : candidates) {
-                BibEntry entryWithCandidate = new BibEntry(entry);
-                entryWithCandidate.setField(StandardField.DATE, candidate);
+                BibEntry entryWithCandidate = new BibEntry(entry).withField(StandardField.DATE, candidate);
                 List<Path> results = new ArrayList<>();
                 for (Path directory : directories) {
                     results.addAll(findFile(entryWithCandidate, directory, this.regExp, extensionRegExp));
@@ -115,30 +114,27 @@ class RegExpBasedFileFinder implements FileFinder {
         Optional<String> month = entry.getField(StandardField.MONTH);
         Optional<String> day = entry.getField(StandardField.DAY);
 
-        String date = entry.getField(StandardField.DATE).orElseGet(() -> {
-            if (year.isEmpty()) {
-                return "";
-            }
-            if (month.isPresent() && day.isPresent()) {
-                return year.get() + "-" + month.get() + "-" + day.get();
-            }
-            if (month.isPresent()) {
-                String monthNum = Month.parse(month.get()).map(Month::getTwoDigitNumber).orElse(month.get());
-                return year.get() + "-" + monthNum;
-            }
-            return year.get();
-        });
-
-        // Handle date ranges (e.g. "2021-01-01/2021-12-31") — use only the start date
-        if (date.contains("/")) {
-            date = date.substring(0, date.indexOf('/'));
-        }
+        Optional<String> date = entry.getField(StandardField.DATE).or(() -> {
+                                         if (year.isEmpty()) {
+                                             return Optional.empty();
+                                         }
+                                         if (month.isPresent() && day.isPresent()) {
+                                             return Optional.of(year.get() + "-" + month.get() + "-" + day.get());
+                                         }
+                                         if (month.isPresent()) {
+                                             String monthNum = Month.parse(month.get()).map(Month::getTwoDigitNumber).orElse(month.get());
+                                             return Optional.of(year.get() + "-" + monthNum);
+                                         }
+                                         return Optional.of(year.get());
+                                     })
+                                     // Handle date ranges (e.g. "2021-01-01/2021-12-31") — use only the start date
+                                     .map(d -> d.contains("/") ? d.substring(0, d.indexOf('/')) : d);
 
         if (date.isEmpty()) {
             return new ArrayList<>();
         }
         List<String> candidates = new ArrayList<>();
-        String[] parts = date.split("-");
+        String[] parts = date.get().split("-");
         for (int i = parts.length; i >= 1; i--) {
             candidates.add(String.join("-", Arrays.copyOfRange(parts, 0, i)));
         }
