@@ -29,7 +29,7 @@ class RegExpBasedFileFinder implements FileFinder {
 
     private static final Pattern ESCAPE_PATTERN = Pattern.compile("([^\\\\])\\\\([^\\\\])");
 
-    private static final Pattern DATE_MARKER_PATTERN = Pattern.compile("\\[(?i:date)\\]");
+    private static final Pattern DATE_MARKER_PATTERN = Pattern.compile("(?<!\\\\)\\[(?i:date)\\]");
 
     private final String regExp;
     private final Character keywordDelimiter;
@@ -95,7 +95,6 @@ class RegExpBasedFileFinder implements FileFinder {
                     return results;
                 }
             }
-            return new ArrayList<>();
         }
         return findFile(entry, directories, extensionRegExp);
     }
@@ -125,7 +124,7 @@ class RegExpBasedFileFinder implements FileFinder {
                                              String monthNum = Month.parse(month.get()).map(Month::getTwoDigitNumber).orElse(month.get());
                                              return Optional.of(year.get() + "-" + monthNum);
                                          }
-                                         return Optional.of(year.get());
+                                         return year;
                                      })
                                      // Handle date ranges (e.g. "2021-01-01/2021-12-31") — use only the start date
                                      .map(d -> d.contains("/") ? d.substring(0, d.indexOf('/')) : d);

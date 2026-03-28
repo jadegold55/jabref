@@ -20,7 +20,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegExpBasedFileFinderTest {
     private static final List<String> PDF_EXTENSION = List.of("pdf");
-    private static final List<String> FILE_NAMES = List.of("ACM_IEEE-CS.pdf", "pdfInDatabase.pdf", "Regexp from [A-Z].pdf", "directory/subdirectory/2003_Hippel_209.pdf", "directory/subdirectory/2017_Gražulis_726.pdf", "directory/subdirectory/pdfInSubdirectory.pdf", "directory/subdirectory/GUO ea - INORG CHEM COMMUN 2010 - Ferroelectric Metal Organic Framework (MOF).pdf");
+    private static final List<String> FILE_NAMES = List.of(
+            "ACM_IEEE-CS.pdf",
+            "pdfInDatabase.pdf",
+            "Regexp from [A-Z].pdf",
+            "directory/subdirectory/2003_Hippel_209.pdf",
+            "directory/subdirectory/2017_Gražulis_726.pdf",
+            "directory/subdirectory/pdfInSubdirectory.pdf",
+            "directory/subdirectory/GUO ea - INORG CHEM COMMUN 2010 - Ferroelectric Metal Organic Framework (MOF).pdf"
+    );
     private Path directory;
     private BibEntry entry;
 
@@ -103,7 +111,11 @@ class RegExpBasedFileFinderTest {
 
     @Test
     void findAssociatedFilesFindFileContainingParenthesizesFromBracketedExpression() throws IOException {
-        BibEntry bibEntry = new BibEntry().withCitationKey("Guo_ICC_2010").withField(StandardField.TITLE, "Ferroelectric Metal Organic Framework (MOF)").withField(StandardField.AUTHOR, "Guo, M. and Cai, H.-L. and Xiong, R.-G.").withField(StandardField.JOURNAL, "Inorganic Chemistry Communications").withField(StandardField.YEAR, "2010");
+        BibEntry bibEntry = new BibEntry().withCitationKey("Guo_ICC_2010")
+                                          .withField(StandardField.TITLE, "Ferroelectric Metal Organic Framework (MOF)")
+                                          .withField(StandardField.AUTHOR, "Guo, M. and Cai, H.-L. and Xiong, R.-G.")
+                                          .withField(StandardField.JOURNAL, "Inorganic Chemistry Communications")
+                                          .withField(StandardField.YEAR, "2010");
 
         RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[TITLE].*\\\\.[extension]", ',');
 
