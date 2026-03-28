@@ -12,6 +12,7 @@ Note that this project **does not** adhere to [Semantic Versioning](https://semv
 ### Added
 
 - We added fallback search for `[DATE]` patterns in the file finder, so that if an exact date match is not found, progressively less specific dates (year-month, then year) are tried. [#8152](https://github.com/JabRef/jabref/issues/8152)
+- We added support for downloading full-text PDFs from Wiley journals via the Wiley TDM API. [#13404](https://github.com/JabRef/jabref/issues/13404)
 - We added `--key-patterns` option to CLI parameters to allows users to set a citation key's pattern for a specific entry type. [#14707](https://github.com/JabRef/jabref/issues/14707)
 - We added a CLI option `--field-formatters` to the `convert` and `generate-bib-from-aux` commands to apply field formatters during export. [#11520](https://github.com/JabRef/jabref/issues/11520)
 - We added a preference to skip the import dialog for entries received from browser extensions, allowing direct import into the current library. The import dialog is shown by default; users can enable direct import in Preferences.
@@ -25,6 +26,7 @@ Note that this project **does not** adhere to [Semantic Versioning](https://semv
 
 ### Changed
 
+- We changed the groups filter field to use a filter icon. [#15402](https://github.com/JabRef/jabref/issues/15402)
 - We improved the MultiMergeEntries dialog to automatically select the most plausible field value when merging entries (e.g. a more specific date). [#15027](https://github.com/JabRef/jabref/issues/15027)
 - We removed the restart prompt when accepting Mr. DLib privacy settings or hiding the Related articles tab in the entry editor. [#15195](https://github.com/JabRef/jabref/issues/15195)
 - We replaced the unlinked files dialog with a wizard-based interface for searching and importing files. [#12709](https://github.com/JabRef/jabref/issues/12709)
@@ -70,6 +72,7 @@ Note that this project **does not** adhere to [Semantic Versioning](https://semv
 - We fixed an issue where the Citation Relations tab failed to recognize already-imported papers when their DOI differed only in letter casing. [#12967](https://github.com/JabRef/jabref/issues/12967)
 - We fixed an issue where a tab or the tab bar would not show, while the setting "hide tab bar when a single library is present" was toggled off [#12680](https://github.com/JabRef/jabref/issues/12680)
 - We improved CSL support with JabRef LibreOffice converter extension. [#14387](https://github.com/JabRef/jabref/issues/14387)
+- We fixed exceptions occuring when generating citation keys or using certain cleanup operations on macOS [#15366](https://github.com/JabRef/jabref/issues/15366)
 
 ### Removed
 
