@@ -29,6 +29,8 @@ class RegExpBasedFileFinder implements FileFinder {
 
     private static final Pattern ESCAPE_PATTERN = Pattern.compile("([^\\\\])\\\\([^\\\\])");
 
+    private static final Pattern DATE_MARKER_PATTERN = Pattern.compile("\\[(?i:date)\\]");
+
     private final String regExp;
     private final Character keywordDelimiter;
 
@@ -52,9 +54,8 @@ class RegExpBasedFileFinder implements FileFinder {
 
         String expandedBracketAsFileNameRegex = BracketedPattern.expandBrackets(filePart, bracketToFileNameRegex);
 
-        String fileNamePattern = expandedBracketAsFileNameRegex
-                .replaceAll(EXT_MARKER, extensionRegExp) // Replace the extension marker
-                .replaceAll("\\\\\\\\", "\\\\");
+        String fileNamePattern = expandedBracketAsFileNameRegex.replaceAll(EXT_MARKER, extensionRegExp) // Replace the extension marker
+                                                               .replaceAll("\\\\\\\\", "\\\\");
         try {
             return Pattern.compile('^' + fileNamePattern + '$', Pattern.CASE_INSENSITIVE);
         } catch (PatternSyntaxException e) {
@@ -68,8 +69,7 @@ class RegExpBasedFileFinder implements FileFinder {
     /// @return a String representation of a regex matching the expanded content and the expanded content cleaned for file name use
     private static String toFileNameRegex(String expandedContent) {
         String cleanedContent = FileNameCleaner.cleanFileName(expandedContent);
-        return expandedContent.equals(cleanedContent) ? Pattern.quote(expandedContent) :
-               "(" + Pattern.quote(expandedContent) + ")|(" + Pattern.quote(cleanedContent) + ")";
+        return expandedContent.equals(cleanedContent) ? Pattern.quote(expandedContent) : "(" + Pattern.quote(expandedContent) + ")|(" + Pattern.quote(cleanedContent) + ")";
     }
 
     /// Method for searching for files using regexp. A list of extensions and directories can be
@@ -82,22 +82,23 @@ class RegExpBasedFileFinder implements FileFinder {
     @Override
     public List<Path> findAssociatedFiles(BibEntry entry, List<Path> directories, List<String> extensions) throws IOException {
         String extensionRegExp = '(' + String.join("|", extensions) + ')';
-        if (this.regExp.contains("[DATE]")) {
+        Matcher dateMatcher = DATE_MARKER_PATTERN.matcher(this.regExp);
+        if (dateMatcher.find()) {
             List<String> candidates = getDateFallbackCandidates(entry);
             for (String candidate : candidates) {
-                String patternWithCandidate = this.regExp.replace("[DATE]", candidate);
+                BibEntry entryWithCandidate = new BibEntry(entry);
+                entryWithCandidate.setField(StandardField.DATE, candidate);
                 List<Path> results = new ArrayList<>();
                 for (Path directory : directories) {
-                    results.addAll(findFile(entry, directory, patternWithCandidate, extensionRegExp));
+                    results.addAll(findFile(entryWithCandidate, directory, this.regExp, extensionRegExp));
                 }
                 if (!results.isEmpty()) {
                     return results;
                 }
             }
             return new ArrayList<>();
-        } else {
-            return findFile(entry, directories, extensionRegExp);
         }
+        return findFile(entry, directories, extensionRegExp);
     }
 
     /// Builds date candidates for `[DATE]` pattern matching, ordered from most to least specific.
@@ -122,13 +123,16 @@ class RegExpBasedFileFinder implements FileFinder {
                 return year.get() + "-" + month.get() + "-" + day.get();
             }
             if (month.isPresent()) {
-                String monthNum = Month.parse(month.get())
-                                       .map(Month::getTwoDigitNumber)
-                                       .orElse(month.get());
+                String monthNum = Month.parse(month.get()).map(Month::getTwoDigitNumber).orElse(month.get());
                 return year.get() + "-" + monthNum;
             }
             return year.get();
         });
+
+        // Handle date ranges (e.g. "2021-01-01/2021-12-31") — use only the start date
+        if (date.contains("/")) {
+            date = date.substring(0, date.indexOf('/'));
+        }
 
         if (date.isEmpty()) {
             return new ArrayList<>();
@@ -220,9 +224,8 @@ class RegExpBasedFileFinder implements FileFinder {
 
                     final Path rootDirectory = currentDirectory;
                     try (Stream<Path> pathStream = Files.walk(currentDirectory, 1)) {
-                        List<Path> subDirs = pathStream
-                                .filter(path -> isSubDirectory(rootDirectory, path))  // We only want to transverse directories (and not the current one; this is already done below)
-                                .toList();
+                        List<Path> subDirs = pathStream.filter(path -> isSubDirectory(rootDirectory, path))  // We only want to transverse directories (and not the current one; this is already done below)
+                                                       .toList();
 
                         for (Path subDir : subDirs) {
                             resultFiles.addAll(findFile(entry, subDir, restOfFileString, extensionRegExp));
@@ -236,9 +239,8 @@ class RegExpBasedFileFinder implements FileFinder {
 
                     final Path rootDirectory = currentDirectory;
                     try (Stream<Path> pathStream = Files.walk(currentDirectory)) {
-                        List<Path> subDirs = pathStream
-                                .filter(path -> isSubDirectory(rootDirectory, path))  // We only want to transverse directories (and not the current one; this is already done below)
-                                .toList();
+                        List<Path> subDirs = pathStream.filter(path -> isSubDirectory(rootDirectory, path))  // We only want to transverse directories (and not the current one; this is already done below)
+                                                       .toList();
 
                         for (Path subDir : subDirs) {
                             resultFiles.addAll(findFile(entry, subDir, restOfFileString, extensionRegExp));

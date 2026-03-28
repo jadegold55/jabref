@@ -166,13 +166,15 @@ class RegExpBasedFileFinderTest {
 
     @ParameterizedTest
     @CsvSource(textBlock = """
-                exact date finds exact file,        2021-07-07, 2021-07-07.pdf;2021-07.pdf, 2021-07-07.pdf
-                full date falls back to month,      2021-07-07, 2021-07.pdf,               2021-07.pdf
-                full date falls back to year,       2021-07-07, 2021.pdf,                  2021.pdf
-                year+month date falls back to year, 2021-07,    2021.pdf,                  2021.pdf
-                no matching file returns empty,     2021-07-07, ,
+                exact date finds exact file,        2021-07-07,            2021-07-07.pdf;2021-07.pdf, 2021-07-07.pdf, **/.*[DATE].*\\\\.[extension]
+                full date falls back to month,      2021-07-07,            2021-07.pdf,               2021-07.pdf,    **/.*[DATE].*\\\\.[extension]
+                full date falls back to year,       2021-07-07,            2021.pdf,                  2021.pdf,       **/.*[DATE].*\\\\.[extension]
+                year+month date falls back to year, 2021-07,               2021.pdf,                  2021.pdf,       **/.*[DATE].*\\\\.[extension]
+                date range uses start date,         2021-01-01/2021-12-31, 2021-01-01.pdf,            2021-01-01.pdf, **/.*[DATE].*\\\\.[extension]
+                lowercase marker triggers fallback, 2021-07-07,            2021-07-07.pdf,            2021-07-07.pdf, **/.*[date].*\\\\.[extension]
+                no matching file returns empty,     2021-07-07,            ,                          ,               **/.*[DATE].*\\\\.[extension]
             """)
-    void dateFallbackBehavior(String description, String dateValue, String filesToCreate, String expectedFile) throws IOException {
+    void dateFallbackBehavior(String description, String dateValue, String filesToCreate, String expectedFile, String pattern) throws IOException {
         // given
         BibEntry localEntry = new BibEntry(StandardEntryType.Article).withField(StandardField.DATE, dateValue);
 
@@ -182,7 +184,7 @@ class RegExpBasedFileFinderTest {
             }
         }
 
-        RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
+        RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder(pattern, ',');
 
         // when
         List<Path> result = fileFinder.findAssociatedFiles(localEntry, List.of(directory), PDF_EXTENSION);
