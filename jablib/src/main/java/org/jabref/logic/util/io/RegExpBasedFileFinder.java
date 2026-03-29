@@ -110,7 +110,7 @@ class RegExpBasedFileFinder implements FileFinder {
     /// @return date candidates in decreasing specificity, or an empty list if no date information is available
     private List<String> getDateFallbackCandidates(BibEntry entry) {
         Optional<String> year = entry.getField(StandardField.YEAR);
-        Optional<String> month = entry.getField(StandardField.MONTH);
+        Optional<String> month = entry.getField(StandardField.MONTH).map(rawMonth -> Month.parse(rawMonth).map(Month::getTwoDigitNumber).orElse(rawMonth));
         Optional<String> day = entry.getField(StandardField.DAY);
 
         Optional<String> date = entry.getField(StandardField.DATE).or(() -> {
@@ -121,8 +121,7 @@ class RegExpBasedFileFinder implements FileFinder {
                                              return Optional.of(year.get() + "-" + month.get() + "-" + day.get());
                                          }
                                          if (month.isPresent()) {
-                                             String monthNum = Month.parse(month.get()).map(Month::getTwoDigitNumber).orElse(month.get());
-                                             return Optional.of(year.get() + "-" + monthNum);
+                                             return Optional.of(year.get() + "-" + month.get());
                                          }
                                          return year;
                                      })

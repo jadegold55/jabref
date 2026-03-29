@@ -20,15 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegExpBasedFileFinderTest {
     private static final List<String> PDF_EXTENSION = List.of("pdf");
-    private static final List<String> FILE_NAMES = List.of(
-            "ACM_IEEE-CS.pdf",
-            "pdfInDatabase.pdf",
-            "Regexp from [A-Z].pdf",
-            "directory/subdirectory/2003_Hippel_209.pdf",
-            "directory/subdirectory/2017_Gražulis_726.pdf",
-            "directory/subdirectory/pdfInSubdirectory.pdf",
-            "directory/subdirectory/GUO ea - INORG CHEM COMMUN 2010 - Ferroelectric Metal Organic Framework (MOF).pdf"
-    );
+    private static final List<String> FILE_NAMES = List.of("ACM_IEEE-CS.pdf", "pdfInDatabase.pdf", "Regexp from [A-Z].pdf", "directory/subdirectory/2003_Hippel_209.pdf", "directory/subdirectory/2017_Gražulis_726.pdf", "directory/subdirectory/pdfInSubdirectory.pdf", "directory/subdirectory/GUO ea - INORG CHEM COMMUN 2010 - Ferroelectric Metal Organic Framework (MOF).pdf");
     private Path directory;
     private BibEntry entry;
 
@@ -111,11 +103,7 @@ class RegExpBasedFileFinderTest {
 
     @Test
     void findAssociatedFilesFindFileContainingParenthesizesFromBracketedExpression() throws IOException {
-        BibEntry bibEntry = new BibEntry().withCitationKey("Guo_ICC_2010")
-                                          .withField(StandardField.TITLE, "Ferroelectric Metal Organic Framework (MOF)")
-                                          .withField(StandardField.AUTHOR, "Guo, M. and Cai, H.-L. and Xiong, R.-G.")
-                                          .withField(StandardField.JOURNAL, "Inorganic Chemistry Communications")
-                                          .withField(StandardField.YEAR, "2010");
+        BibEntry bibEntry = new BibEntry().withCitationKey("Guo_ICC_2010").withField(StandardField.TITLE, "Ferroelectric Metal Organic Framework (MOF)").withField(StandardField.AUTHOR, "Guo, M. and Cai, H.-L. and Xiong, R.-G.").withField(StandardField.JOURNAL, "Inorganic Chemistry Communications").withField(StandardField.YEAR, "2010");
 
         RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[TITLE].*\\\\.[extension]", ',');
 
@@ -211,13 +199,18 @@ class RegExpBasedFileFinderTest {
 
     @ParameterizedTest
     @CsvSource(textBlock = """
-                numeric month format,               07,    2021-07.pdf
-                bibtex month string,                #jul#, 2021-07.pdf
+                numeric month format,               07,    ,   2021-07.pdf
+                numeric month+day format,           07,    07, 2021-07-07.pdf
+                bibtex month string,                #jul#, ,   2021-07.pdf
+                bibtex month string+day format,     #jul#, 07, 2021-07-07.pdf
             """)
-    void dateFallbackFromYearMonthFieldsWhenNoDateField(String description, String monthValue, String expectedFile) throws IOException {
-        // given - entry has year+month fields (no date field); only month-precision file exists
+    void dateFallbackFromYearMonthFieldsWhenNoDateField(String description, String monthValue, String dayValue, String expectedFile) throws IOException {
+        // given - entry has year+month(+day) fields (no date field)
         BibEntry localEntry = new BibEntry(StandardEntryType.Article).withField(StandardField.YEAR, "2021").withField(StandardField.MONTH, monthValue);
-        Files.createFile(directory.resolve("2021-07.pdf"));
+        if (dayValue != null && !dayValue.isBlank()) {
+            localEntry = localEntry.withField(StandardField.DAY, dayValue);
+        }
+        Files.createFile(directory.resolve(expectedFile));
 
         RegExpBasedFileFinder fileFinder = new RegExpBasedFileFinder("**/.*[DATE].*\\\\.[extension]", ',');
 
