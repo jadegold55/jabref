@@ -54,8 +54,9 @@ class RegExpBasedFileFinder implements FileFinder {
 
         String expandedBracketAsFileNameRegex = BracketedPattern.expandBrackets(filePart, bracketToFileNameRegex);
 
-        String fileNamePattern = expandedBracketAsFileNameRegex.replaceAll(EXT_MARKER, extensionRegExp) // Replace the extension marker
-                                                               .replaceAll("\\\\\\\\", "\\\\");
+        String fileNamePattern = expandedBracketAsFileNameRegex
+                .replaceAll(EXT_MARKER, extensionRegExp) // Replace the extension marker
+                .replaceAll("\\\\\\\\", "\\\\");
         try {
             return Pattern.compile('^' + fileNamePattern + '$', Pattern.CASE_INSENSITIVE);
         } catch (PatternSyntaxException e) {
@@ -69,7 +70,8 @@ class RegExpBasedFileFinder implements FileFinder {
     /// @return a String representation of a regex matching the expanded content and the expanded content cleaned for file name use
     private static String toFileNameRegex(String expandedContent) {
         String cleanedContent = FileNameCleaner.cleanFileName(expandedContent);
-        return expandedContent.equals(cleanedContent) ? Pattern.quote(expandedContent) : "(" + Pattern.quote(expandedContent) + ")|(" + Pattern.quote(cleanedContent) + ")";
+        return expandedContent.equals(cleanedContent) ? Pattern.quote(expandedContent) :
+               "(" + Pattern.quote(expandedContent) + ")|(" + Pattern.quote(cleanedContent) + ")";
     }
 
     /// Method for searching for files using regexp. A list of extensions and directories can be
@@ -218,8 +220,9 @@ class RegExpBasedFileFinder implements FileFinder {
 
                     final Path rootDirectory = currentDirectory;
                     try (Stream<Path> pathStream = Files.walk(currentDirectory, 1)) {
-                        List<Path> subDirs = pathStream.filter(path -> isSubDirectory(rootDirectory, path))  // We only want to transverse directories (and not the current one; this is already done below)
-                                                       .toList();
+                        List<Path> subDirs = pathStream
+                                .filter(path -> isSubDirectory(rootDirectory, path))  // We only want to transverse directories (and not the current one; this is already done below)
+                                .toList();
 
                         for (Path subDir : subDirs) {
                             resultFiles.addAll(findFile(entry, subDir, restOfFileString, extensionRegExp));
@@ -233,8 +236,9 @@ class RegExpBasedFileFinder implements FileFinder {
 
                     final Path rootDirectory = currentDirectory;
                     try (Stream<Path> pathStream = Files.walk(currentDirectory)) {
-                        List<Path> subDirs = pathStream.filter(path -> isSubDirectory(rootDirectory, path))  // We only want to transverse directories (and not the current one; this is already done below)
-                                                       .toList();
+                        List<Path> subDirs = pathStream
+                                .filter(path -> isSubDirectory(rootDirectory, path))  // We only want to transverse directories (and not the current one; this is already done below)
+                                .toList();
 
                         for (Path subDir : subDirs) {
                             resultFiles.addAll(findFile(entry, subDir, restOfFileString, extensionRegExp));
